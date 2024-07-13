@@ -9,27 +9,27 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0.5860401449913194 -0.5887161152826393 -0.5567497499461239 4.161486154901576
-  position 0.22573421343395972 0.4036281046960236 8.54037199117158
+  position 0.22550506245010055 0.3539018412986011 7.570996361866281
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 4 4
+  floorSize 3 3
   floorTileSize 1 1
 }
 WoodenBox {
-  translation -1.73919 -0.634136 0.15
+  translation -0.728829 0.30487 0.15
   size 0.3 0.3 0.3
 }
 WoodenBox {
-  translation -0.91909 0.902696 0.15
+  translation 0.473891 0.509404 0.15
   name "wooden box(1)"
   size 0.3 0.3 0.3
 }
 DEF e-puck Robot {
-  translation 1.6165 -1.6054 0.001
+  translation 0.775553 -0.760101 0.001
   rotation 0 0 1 3.14159
   children [
     Compass {
