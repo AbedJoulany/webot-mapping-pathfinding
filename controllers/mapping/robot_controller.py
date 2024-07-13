@@ -253,11 +253,12 @@ class RobotController:
             elif self.keys["w"]:
                 self.left_motor.setVelocity(6.28)
                 self.right_motor.setVelocity(6.28)
-            else:
+            elif self.keys["s"]:
                 #self.save_map()
-
                 self.left_motor.setVelocity(0)
                 self.right_motor.setVelocity(0)
+            elif self.keys["p"]:
+                self.save_map()
         else:
             if is_goal or current_time < 3:
                 self.left_motor.setVelocity(0)
@@ -307,7 +308,6 @@ class RobotController:
             v, w = self.odometry()
             #vL, vR = self.calculate_wheel_speed(v, w)
             #path_id = self.robot_control(vL, vR, is_goal, 0.2,path, current_time)
-            
             z, z_points, angle_i, pointCloud = self.get_lidar_points()
 
             robot_pose = self.get_robot_pose_from_webots()

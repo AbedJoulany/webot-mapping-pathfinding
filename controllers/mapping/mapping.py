@@ -1,10 +1,12 @@
 # main.py
 
 #from robot_controller import RobotController
-from path_finding_robot import RobotController
+from path_finding_robot import PathFindingRobotController
 
 from manual import manual_navigation
 import cv2
+from manual_mapping_robot import ManualMappingController
+
 """
 def main():
     controller = RobotController()
@@ -31,12 +33,17 @@ if __name__ == "__main__":
 
 
 if __name__ == "__main__":
+    """
     # Create instance of RobotController
-    robot_controller = RobotController()
-
+    path_finding_robot_controller = PathFindingRobotController()
+    manual_mapping_controller = ManualMappingController()
     # Example start and goal positions
-    start_position = robot_controller.get_robot_pose_from_webots()
-    x,y = robot_controller.get_target_position()
+    start_position = path_finding_robot_controller.get_robot_pose_from_webots()
+    x,y = path_finding_robot_controller.get_target_position()
     goal_position = (x,y,1.0)
     # Plan and follow path
-    robot_controller.plan_and_follow_path(start_position, goal_position)
+    #path_finding_robot_controller.plan_and_follow_path(start_position, goal_position)
+    """
+    manual_mapping_controller = ManualMappingController()
+
+    manual_mapping_controller.run()
