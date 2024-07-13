@@ -2,7 +2,6 @@ import math
 import numpy as np
 from controller import Supervisor, Keyboard, Lidar, GPS
 from visualize_grid import create_occupancy_grid
-from visualizer import Visualizer
 from matplotlib import pyplot as plt
 from rrt_star import RRTStar
 
@@ -72,9 +71,7 @@ class RobotController:
 
         self.hTruePos = np.zeros((3, 0))
         self.hEncoPos = np.zeros((3, 0))
-        
-        self.visualizer = Visualizer()
-        
+
         self.map = np.zeros((0, 2))  # Initialize the map to store lidar points
 
         self.hedef = self._robot.getFromDef("target")  # Adding target initialization
@@ -311,8 +308,7 @@ class RobotController:
             z, z_points, angle_i, pointCloud = self.get_lidar_points()
 
             robot_pose = self.get_robot_pose_from_webots()
-            #self.visualizer.update(robot_pose, z_points, path_id)
-            #self.visualizer.refresh()
+
 
             #self.update_robot_poses(robot_pose)
             self.hEncoP = np.hstack((self.hEncoPos, self.robot_pose_encoder))
