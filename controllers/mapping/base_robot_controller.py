@@ -30,10 +30,10 @@ class BaseRobotController:
         self._left_motor.setPosition(float('inf'))
         self._right_motor.setPosition(float('inf'))
 
-        self._left_ps = self._robot.getDevice("left wheel sensor")
+        self._left_ps = self._robot.getDevice("right wheel sensor")
         self._left_ps.enable(self._timestep)
 
-        self._right_ps = self._robot.getDevice("right wheel sensor")
+        self._right_ps = self._robot.getDevice("left wheel sensor")
         self._right_ps.enable(self._timestep)
 
         self._keyboard = self._robot.getKeyboard()
