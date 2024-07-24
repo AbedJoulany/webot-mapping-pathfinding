@@ -9,14 +9,14 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0.5860401449913194 -0.5887161152826393 -0.5567497499461239 4.161486154901576
-  position 0.22550506245010055 0.3539018412986011 7.570996361866281
+  position 0.2249314115527846 0.2294183451437988 5.144285421236039
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 3 3
+  floorSize 2 2
   floorTileSize 1 1
 }
 WoodenBox {

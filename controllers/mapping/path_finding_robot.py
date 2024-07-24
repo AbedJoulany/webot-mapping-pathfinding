@@ -23,7 +23,12 @@ class PathFindingRobotController(BaseRobotController):
 
     def _initialize_path_planning(self):
         # Accessing resolution and map_size from the base class
-        self.occupancy_grid = [[0] * int(self.map_size[0] / self.resolution) for _ in range(int(self.map_size[1] / self.resolution))]
+
+        # Usage example
+        file_path = 'map.csv'
+
+        self.occupancy_grid = create_occupancy_grid(file_path, self.map_size[0], self.resolution)
+        #self.occupancy_grid = [[0] * int(self.map_size[0] / self.resolution) for _ in range(int(self.map_size[1] / self.resolution))]
         self.pathfinder = AStarPathfinder(self.occupancy_grid, self.resolution, self.map_size)
 
     def plan_and_follow_path(self, start_position, goal_position):

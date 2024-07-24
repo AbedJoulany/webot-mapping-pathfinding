@@ -62,7 +62,7 @@ def print_occupancy_grid(occupancy_grid):
 # Usage example
 file_path = 'map.csv'
 map_size = 2  # meters
-resolution = 0.001  # meter per cell
+resolution = 0.01  # meter per cell
 
 #occupancy_grid = create_occupancy_grid(file_path, map_size, resolution)
 #visualize_occupancy_grid(occupancy_grid)
