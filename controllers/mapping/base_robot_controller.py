@@ -25,6 +25,9 @@ class BaseRobotController:
         self._compass = self._robot.getDevice("compass")
         self._compass.enable(self._timestep)
 
+        self._camera = self._robot.getDevice('camera')
+        #self._camera.enable(self._timestep)
+
         self._left_motor = self._robot.getDevice("left wheel motor")
         self._right_motor = self._robot.getDevice("right wheel motor")
         self._left_motor.setPosition(float('inf'))
@@ -103,6 +106,10 @@ class BaseRobotController:
     @property
     def compass(self):
         return self._compass
+
+    @property
+    def camera(self):
+        return self._camera
 
     def set_motor_speeds(self, left_speed, right_speed):
         self._left_motor.setVelocity(left_speed)

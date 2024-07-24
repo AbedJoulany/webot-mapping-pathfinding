@@ -6,6 +6,7 @@ from path_finding_robot import PathFindingRobotController
 from manual import manual_navigation
 import cv2
 from manual_mapping_robot import ManualMappingController
+from data_collect import DataCollectorRobotController
 
 """
 def main():
@@ -44,6 +45,10 @@ if __name__ == "__main__":
     # Plan and follow path
     #path_finding_robot_controller.plan_and_follow_path(start_position, goal_position)
     """
-    manual_mapping_controller = ManualMappingController()
+    #manual_mapping_controller = ManualMappingController()
 
-    manual_mapping_controller.run()
+    #manual_mapping_controller.run()
+
+    robot = DataCollectorRobotController()
+    robot.move_random()
+    #robot.save_collected_data()

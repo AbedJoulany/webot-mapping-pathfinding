@@ -3,33 +3,23 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/factory/containers/protos/WoodenBox.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.5860401449913194 -0.5887161152826393 -0.5567497499461239 4.161486154901576
-  position 0.22516493395241308 0.28009321529955067 6.132153416757756
+  orientation -0.5773502691896257 0.5773502691896257 0.5773502691896257 2.0943245915045035
+  position 5.767197088687386e-05 5.7669623137924174e-05 8.413717124749184
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 3 3
+  floorSize 4 4
   floorTileSize 1 1
 }
-WoodenBox {
-  translation -0.728829 0.30487 0.15
-  size 0.3 0.3 0.3
-}
-WoodenBox {
-  translation 0.473891 0.509404 0.15
-  name "wooden box(1)"
-  size 0.3 0.3 0.3
-}
 DEF e-puck Robot {
-  translation 0.775553 -0.760101 0.001
+  translation 0.775553 -0.760101 -6.50922e-05
   rotation 0 0 1 3.14159
   children [
     Compass {
@@ -37,9 +27,9 @@ DEF e-puck Robot {
     GPS {
     }
     Lidar {
-      translation 0 0 0.1
+      translation 0 0 0.06
       rotation 0 0 1 3.14
-      fieldOfView 6.283
+      fieldOfView 6.28
       numberOfLayers 1
     }
     HingeJoint {
@@ -59,7 +49,7 @@ DEF e-puck Robot {
         }
       ]
       endPoint DEF EPUCK_LEFT_WHEEL Solid {
-        translation 0 0.026000000000000013 0.02
+        translation 0 0.026000000000000006 0.02
         rotation 0 1 0 0
         children [
           DEF EPUCK_WHEEL Pose {
@@ -211,7 +201,7 @@ DEF e-puck Robot {
         }
       ]
       endPoint DEF EPUCK_RIGHT_WHEEL Solid {
-        translation 0 -0.026 0.02
+        translation 0 -0.025999999999999985 0.02
         rotation 0 1 0 0
         children [
           Pose {
@@ -1267,8 +1257,6 @@ DEF e-puck Robot {
         }
       ]
       fieldOfView 0.84
-      width 52
-      height 39
       near 0.0055
       zoom Zoom {
       }
@@ -1614,19 +1602,157 @@ DEF e-puck Robot {
   window "generic_window"
   remoteControl "e-puck_bluetooth"
 }
-DEF target Solid {
-  translation -0.75 -0.75 0.01
+DEF FourWheelsRobot Robot {
+  translation 0 0 0.04
   children [
-    DEF shape Shape {
+    DEF BODY Shape {
       appearance PBRAppearance {
-        baseColor 0 1 0
+        baseColor 0.917647 0.145098 0.145098
         roughness 1
         metalness 0
       }
-      geometry Cylinder {
-        height 0.01
-        radius 0.05
+      geometry Box {
+        size 0.2 0.1 0.05
       }
     }
+    DEF WHEEL1 HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.05 0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel1"
+        }
+      ]
+      endPoint Solid {
+        translation 0.05 0.06 0
+        rotation 1 1.1775671812919288e-15 -7.850447875279524e-17 1.5707999999999982
+        children [
+          DEF WHEEL Shape {
+            appearance PBRAppearance {
+              baseColor 0.305882 0.898039 0.25098
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.02
+              radius 0.04
+              subdivision 24
+            }
+          }
+        ]
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF WHEEL2 HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.05 -0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel2"
+        }
+      ]
+      endPoint Solid {
+        translation 0.05 -0.06 0
+        rotation 1 1.6485940538086996e-15 0 1.5707999999999989
+        children [
+          USE WHEEL
+        ]
+        name "solid(1)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF WHEEL3 HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor -0.05 0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel3"
+        }
+      ]
+      endPoint Solid {
+        translation -0.05 0.06 0
+        rotation 1 -1.570089575055905e-15 0 1.5707999999999982
+        children [
+          USE WHEEL
+        ]
+        name "solid(2)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF WHEEL4 HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor -0.05 -0.06 0
+      }
+      device [
+        RotationalMotor {
+          name "wheel4"
+        }
+      ]
+      endPoint Solid {
+        translation -0.05 -0.06 0
+        rotation 1 1.0205582237863384e-15 0 1.570799999999998
+        children [
+          USE WHEEL
+        ]
+        name "solid(3)"
+        boundingObject USE WHEEL
+        physics Physics {
+        }
+      }
+    }
+    DEF DS_RIGHT DistanceSensor {
+      translation 0.1 -0.03 0
+      rotation 0 0 1 -0.3
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.184314 0.596078 0.847059
+            roughness 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "ds_right"
+    }
+    DEF DS_LEFT DistanceSensor {
+      translation 0.1 0.03 0
+      rotation 0 0 1 0.3
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.184314 0.596078 0.847059
+            roughness 1
+            metalness 0
+          }
+          geometry Box {
+            size 0.01 0.01 0.01
+          }
+        }
+      ]
+      name "ds_left"
+    }
   ]
+  boundingObject USE BODY
+  physics Physics {
+    density -1
+    mass 1
+  }
+  controller "4_wheels_robot_controller"
+  supervisor TRUE
 }
