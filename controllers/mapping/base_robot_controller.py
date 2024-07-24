@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from controller import Supervisor, Keyboard, Lidar, GPS
+from PID.pid_controller import PIDController
 from visualize_grid import create_occupancy_grid
 from matplotlib import pyplot as plt
 
@@ -41,6 +42,9 @@ class BaseRobotController:
 
         self._keyboard = self._robot.getKeyboard()
         self._keyboard.enable(self._timestep)
+
+        self.distance_pid = PIDController(1.0, 0.01, 0.1)
+        self.heading_pid = PIDController(0.1, 0.01, 0.05)
 
         self._init_constants()
         self._initialize_mapping()

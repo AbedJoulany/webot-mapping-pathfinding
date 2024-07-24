@@ -1,1 +1,1 @@
-Time,Obstacle_X,Obstacle_Y,Obstacle_Theta,Robot_X,Robot_Y,Robot_Theta
+Time,Estimated_X,Estimated_Y,Estimated_Velocity,Actual_X,Actual_Y,Actual_Velocity
