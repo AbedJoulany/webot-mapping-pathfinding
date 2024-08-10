@@ -6,20 +6,20 @@ from matplotlib import pyplot as plt
 from a_star import AStarPathfinder
 from base_robot_controller import BaseRobotController
 
+
+
 class PathFindingRobotController(BaseRobotController):
     _instance = None
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.__init__()
-        return cls._instance
-
-    def __init__(self):
+    def __init__(self, robot_name="e-puck"):
+        """
         if not hasattr(self, '_initialized'):  # Avoid reinitialization
-            super().__init__()
+            super().__init__(robot_name)
             self._initialize_path_planning()
             self._initialized = True
+        """
+        super().__init__(robot_name)
+        self._initialize_path_planning()
 
     def _initialize_path_planning(self):
         # Accessing resolution and map_size from the base class

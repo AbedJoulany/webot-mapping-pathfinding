@@ -1,12 +1,70 @@
 # main.py
 
 #from robot_controller import RobotController
+from path_finding_robot_ekf import PathFindingRobotEKFController
+from data_collect import DataCollectorRobotController
 from path_finding_robot import PathFindingRobotController
 
 from manual import manual_navigation
-import cv2
 from manual_mapping_robot import ManualMappingController
-from data_collect import DataCollectorRobotController
+
+
+if __name__ == "__main__":
+
+    mode = 0
+
+    if mode == 0:
+        manual_mapping_controller = ManualMappingController()
+
+        manual_mapping_controller.run()
+
+
+    if mode  == 1:
+        # Create instance of RobotController
+        path_finding_robot_controller = PathFindingRobotController()
+        # Example start and goal positions
+        start_position = path_finding_robot_controller.get_robot_pose_from_webots()
+        x,y = path_finding_robot_controller.get_target_position()
+        goal_position = (x,y,1.0)
+        # Plan and follow path
+        path_finding_robot_controller.plan_and_follow_path(start_position, goal_position)
+
+
+    if mode == 2:
+        path_finding_robot_controller = PathFindingRobotEKFController()
+                # Example start and goal positions
+        start_position = path_finding_robot_controller.get_robot_pose_from_webots()
+        x,y = path_finding_robot_controller.get_target_position()
+        goal_position = (x,y,1.0)
+        # Plan and follow path
+        path_finding_robot_controller.plan_and_follow_path(start_position, goal_position)
+        print("finished ````````````````")
+
+
+    if mode == 3:
+        robot = DataCollectorRobotController()
+        robot.move_random()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 """
 def main():
@@ -31,24 +89,3 @@ def main():
 
 if __name__ == "__main__":
     main()"""
-
-
-if __name__ == "__main__":
-    """
-    # Create instance of RobotController
-    path_finding_robot_controller = PathFindingRobotController()
-    manual_mapping_controller = ManualMappingController()
-    # Example start and goal positions
-    start_position = path_finding_robot_controller.get_robot_pose_from_webots()
-    x,y = path_finding_robot_controller.get_target_position()
-    goal_position = (x,y,1.0)
-    # Plan and follow path
-    #path_finding_robot_controller.plan_and_follow_path(start_position, goal_position)
-    """
-    #manual_mapping_controller = ManualMappingController()
-
-    #manual_mapping_controller.run()
-
-    robot = DataCollectorRobotController()
-    robot.move_random()
-    #robot.save_collected_data()

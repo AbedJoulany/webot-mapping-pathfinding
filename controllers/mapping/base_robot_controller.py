@@ -6,16 +6,15 @@ from visualize_grid import create_occupancy_grid
 from matplotlib import pyplot as plt
 
 class BaseRobotController:
-    def __init__(self):
+    def __init__(self, robot_name= "e-puck"):
         self._robot = Supervisor()
         self._timestep = int(self._robot.getBasicTimeStep())
-        self._initialize_devices()
+        self._initialize_devices(robot_name)
 
-    def _initialize_devices(self):
+    def _initialize_devices(self, robot_name:str):
         self._timestep = 64
-        self._epuck_robot = self._robot.getFromDef("e-puck")
+        self._epuck_robot = self._robot.getFromDef(robot_name)
         self._rotation_field = self._epuck_robot.getField("rotation")
-
         self._lidar = self._robot.getDevice("lidar")
         self._lidar.enable(self._timestep)
         self._lidar.enablePointCloud()
@@ -77,7 +76,7 @@ class BaseRobotController:
         self.ps_values = [0, 0]
         self.dist_values = [0, 0]
         self.last_ps_values = [0, 0]
-        self.target = self._robot.getFromDef("target")
+        self.target = self._robot.getFromDef("target3")
 
     @property
     def robot(self):
@@ -267,12 +266,54 @@ class BaseRobotController:
         return current_time < previous_time or len(z_points) == 0
 
     def update_map(self, z_points, current_time, previous_time):
-        self.map = np.vstack((self.map, z_points))
-        return 0
+
+        # Convert current map and z_points to sets of tuples to check for existing points
+        existing_points = set(map(tuple, self.map))
+        new_points = [point for point in z_points if tuple(point) not in existing_points]
+
+        # Update the map only with new points
+        if new_points:
+            self.map = np.vstack((self.map, new_points))
+        #self.map = np.vstack((self.map, z_points))
 
     def save_map(self):
         np.savetxt("map.csv", self.map, delimiter=",")
         print("Map saved to map.csv")
+
+
+
+    def update_pid(self, current_position, target_position):
+        current_orientation = current_position[2]
+
+        distance_error, heading_error = self.calculate_control_signal(target_position, current_position, current_orientation)
+
+        dt = self.timestep / 64
+        linear_velocity = self.distance_pid.update(distance_error, dt)
+        angular_velocity = self.heading_pid.update(heading_error, dt)
+        
+        left_speed = self.limit_speed(linear_velocity - angular_velocity, -20, 20)
+        right_speed = self.limit_speed(linear_velocity + angular_velocity, -20, 20)
+        
+        self.set_motor_speeds(left_speed, right_speed)
+
+    def calculate_error(self, target, current):
+        return math.sqrt((target[0] - current[0]) ** 2 + (target[1] - current[1]) ** 2)
+
+    def calculate_control_signal(self, target, current_position, current_orientation):
+        angle_to_target = math.degrees(math.atan2(target[1] - current_position[1], target[0] - current_position[0]))
+        heading_error = angle_to_target - math.degrees(current_orientation)
+
+        if heading_error > 180:
+            heading_error -= 360
+        elif heading_error < -180:
+            heading_error += 360
+
+        distance_error = self.calculate_error(target, current_position)
+
+        return distance_error, heading_error
+
+    def limit_speed(self, speed, min_speed, max_speed):
+        return max(min_speed, min(speed, max_speed))
 
 
 

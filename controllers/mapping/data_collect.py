@@ -1,15 +1,60 @@
 import math
 import numpy as np
-import cv2
 import csv
 
 from controller import Supervisor, Keyboard, Lidar, GPS
+#from EKF import EKF
 from visualize_grid import create_occupancy_grid
 from matplotlib import pyplot as plt
 from a_star import AStarPathfinder
 from base_robot_controller import BaseRobotController
 from sklearn.cluster import DBSCAN
 from sklearn.linear_model import LinearRegression
+
+
+class EKF:
+    def __init__(self, dt, state_dim, meas_dim, control_dim):
+        self.dt = dt
+        self.state_dim = state_dim
+        self.meas_dim = meas_dim
+        self.control_dim = control_dim
+        self.F = np.eye(state_dim)
+        self.H = np.eye(meas_dim, state_dim)
+        self.Q = np.eye(state_dim)
+        self.R = np.eye(meas_dim)
+        self.P = np.eye(state_dim)
+        self.x = np.zeros((state_dim, 1))
+        self.u = np.zeros((control_dim, 1))
+
+    def predict(self):
+        self.x = np.dot(self.F, self.x) + np.dot(self.B, self.u)
+        self.P = np.dot(self.F, np.dot(self.P, self.F.T)) + self.Q
+
+    def update(self, z):
+        y = z - np.dot(self.H, self.x)
+        S = np.dot(self.H, np.dot(self.P, self.H.T)) + self.R
+        K = np.dot(self.P, np.dot(self.H.T, np.linalg.inv(S)))
+        self.x = self.x + np.dot(K, y)
+        self.P = self.P - np.dot(K, np.dot(self.H, self.P))
+
+    def set_F(self, F):
+        self.F = F
+
+    def set_H(self, H):
+        self.H = H
+
+    def set_Q(self, Q):
+        self.Q = Q
+
+    def set_R(self, R):
+        self.R = R
+
+    def set_B(self, B):
+        self.B = B
+
+    def set_u(self, u):
+        self.u = u
+
 
 class DataCollectorRobotController(BaseRobotController):
     _instance = None
@@ -28,48 +73,44 @@ class DataCollectorRobotController(BaseRobotController):
             self.obstacle = self._robot.getFromDef("FourWheelsRobot")
 
             self.data = []
-            self.header = ['Time', 'Estimated_X', 'Estimated_Y', 'Estimated_Velocity', 
-                           'Actual_X', 'Actual_Y', 'Actual_Velocity']
+            self.header = ['Time', 'Estimated_X', 'Estimated_Y', 'Estimated_Velocity',
+                            'Actual_X', 'Actual_Y', 'Actual_Velocity']
             with open('simulation_data.csv', 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(self.header)  # Write header
             self.robot_pose_encoder = self.get_robot_pose_from_webots()
             self.previous_positions = []
             self.previous_times = []
-            #self.ekf = self.initialize_ekf()
-    """
+            self.ekf = self.initialize_ekf()
+
     def initialize_ekf(self):
-        dt = self._timestep / 1000.0  # Convert timestep to seconds
-        state_dim = 3  # [x, y, theta]
-        meas_dim = 3   # [x, y, theta]
-        control_dim = 2  # [v, omega]
+        state_dim = 4  # [x, y, vx, vy]
+        meas_dim = 4   # [x, y, vx, vy]
+        control_dim = 2  # [ax, ay]
 
-
-        ekf = EKF(dt, state_dim, meas_dim, control_dim)
-
+        ekf = EKF(64, state_dim, meas_dim, control_dim)
 
         # State transition model (linearized)
         F = np.eye(state_dim)
-
         ekf.set_F(F)
 
         # Measurement model (linearized)
         H = np.eye(meas_dim, state_dim)
-
         ekf.set_H(H)
 
         # Process noise covariance
-        q = 0.1  # Process noise scalar
-        Q = q * np.eye(state_dim)
+        Q = 0.1 * np.eye(state_dim)
         ekf.set_Q(Q)
 
         # Measurement noise covariance
-        r = 0.5  # Measurement noise scalar
-        R = r * np.eye(meas_dim)
+        R = 0.5 * np.eye(meas_dim)
         ekf.set_R(R)
 
+        # Control input model
+        B = np.eye(state_dim, control_dim)
+        ekf.set_B(B)
+
         return ekf
-    """
 
     def get_obstacle_position(self):
         target_pos = self.obstacle.getPosition()
@@ -95,7 +136,6 @@ class DataCollectorRobotController(BaseRobotController):
         self.adjust_heading(current_position, target_position)
 
         while not reached_waypoint(current_position, target_position):
-
             self.update_pid(current_position, target_position)
             self.robot.step(self._timestep)
             current_position = self.get_robot_pose_from_webots()
@@ -157,20 +197,25 @@ class DataCollectorRobotController(BaseRobotController):
             self.history = []
             return
 
-        left_speed = self.left_motor.getVelocity()
-        right_speed = self.right_motor.getVelocity()
-        speed = (left_speed + right_speed) / 2
         current_time = self.robot.getTime()
 
         obstacle_velocity = self.get_obstacle_actual_velocity()
-        print(f"obstacle_velocity = {np.linalg.norm(obstacle_velocity)}")
 
         v, w = self.odometry()
         z, z_points, angle_i, pointCloud = self.get_lidar_points()
         obstacle_positions, obstacle_orientations = self.estimate_obstacle_position_and_orientation(z_points)
         estimated_velocity = self.estimate_obstacle_velocity(obstacle_positions, current_time)
-        print(f"estimated_velocity = {estimated_velocity}")
 
+        # Use EKF to predict and update
+        z = np.hstack((obstacle_positions[0], estimated_velocity))
+        self.ekf.predict()
+        self.ekf.update(z)
+
+        ekf_state = self.ekf.x.flatten()
+
+        print(f"real = {self.get_obstacle_position()}, {np.linalg.norm(obstacle_velocity)}")
+        print(f"estimated_velocity = {obstacle_positions, estimated_velocity}")
+        print('ekf = ',ekf_state[0], ekf_state[1], np.linalg.norm(ekf_state[2:4]))
 
         #for pos, ori in zip(obstacle_positions, obstacle_orientations):
         #    print(f"Obstacle Position: {pos}, Orientation: {ori}")
@@ -227,7 +272,6 @@ class DataCollectorRobotController(BaseRobotController):
         angular_velocity = velocity[3:]
 
         return np.array([np.linalg.norm(linear_velocity), np.linalg.norm(angular_velocity)])
-    
 
 
     def estimate_obstacle_velocity(self, current_positions, current_time):
