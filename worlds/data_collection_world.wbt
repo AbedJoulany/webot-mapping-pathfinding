@@ -3,19 +3,20 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/factory/containers/protos/WoodenBox.proto"
 
 WorldInfo {
 }
 Viewpoint {
   orientation -0.5773502691896257 0.5773502691896257 0.5773502691896257 2.0943245915045035
-  position 5.022815971657499e-05 5.0226114995126977e-05 8.596565432973273
+  position 6.062258409953094e-05 6.062011623510142e-05 8.341238844226613
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
-  floorSize 4 4
+  floorSize 3.5 3.5
   floorTileSize 1 1
 }
 DEF e-puck Robot {
@@ -1606,160 +1607,6 @@ DEF e-puck Robot {
   window "generic_window"
   remoteControl "e-puck_bluetooth"
 }
-DEF FourWheelsRobot Robot {
-  translation 0 0 0.04
-  children [
-    DEF BODY Shape {
-      appearance PBRAppearance {
-        baseColor 0.917647 0.145098 0.145098
-        roughness 1
-        metalness 0
-      }
-      geometry Box {
-        size 0.2 0.1 0.05
-      }
-    }
-    DEF WHEEL1 HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.05 0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "wheel1"
-        }
-      ]
-      endPoint Solid {
-        translation 0.05 0.06 0
-        rotation 1 1.1775671812919288e-15 -7.850447875279524e-17 1.5707999999999982
-        children [
-          DEF WHEEL Shape {
-            appearance PBRAppearance {
-              baseColor 0.305882 0.898039 0.25098
-              roughness 1
-              metalness 0
-            }
-            geometry Cylinder {
-              height 0.02
-              radius 0.04
-              subdivision 24
-            }
-          }
-        ]
-        boundingObject USE WHEEL
-        physics Physics {
-        }
-      }
-    }
-    DEF WHEEL2 HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.05 -0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "wheel2"
-        }
-      ]
-      endPoint Solid {
-        translation 0.05 -0.06 0
-        rotation 1 1.6485940538086996e-15 0 1.5707999999999989
-        children [
-          USE WHEEL
-        ]
-        name "solid(1)"
-        boundingObject USE WHEEL
-        physics Physics {
-        }
-      }
-    }
-    DEF WHEEL3 HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor -0.05 0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "wheel3"
-        }
-      ]
-      endPoint Solid {
-        translation -0.05 0.06 0
-        rotation 1 -1.570089575055905e-15 0 1.5707999999999982
-        children [
-          USE WHEEL
-        ]
-        name "solid(2)"
-        boundingObject USE WHEEL
-        physics Physics {
-        }
-      }
-    }
-    DEF WHEEL4 HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor -0.05 -0.06 0
-      }
-      device [
-        RotationalMotor {
-          name "wheel4"
-        }
-      ]
-      endPoint Solid {
-        translation -0.05 -0.06 0
-        rotation 1 1.0205582237863384e-15 0 1.570799999999998
-        children [
-          USE WHEEL
-        ]
-        name "solid(3)"
-        boundingObject USE WHEEL
-        physics Physics {
-        }
-      }
-    }
-    DEF DS_RIGHT DistanceSensor {
-      translation 0.1 -0.03 0
-      rotation 0 0 1 -0.3
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.184314 0.596078 0.847059
-            roughness 1
-            metalness 0
-          }
-          geometry Box {
-            size 0.01 0.01 0.01
-          }
-        }
-      ]
-      name "ds_right"
-    }
-    DEF DS_LEFT DistanceSensor {
-      translation 0.1 0.03 0
-      rotation 0 0 1 0.3
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.184314 0.596078 0.847059
-            roughness 1
-            metalness 0
-          }
-          geometry Box {
-            size 0.01 0.01 0.01
-          }
-        }
-      ]
-      name "ds_left"
-    }
-  ]
-  boundingObject USE BODY
-  physics Physics {
-    density -1
-    mass 1
-  }
-  controller "4_wheels_robot_controller"
-  supervisor TRUE
-}
 DEF target Solid {
   translation -0.75 -0.75 0.01
   children [
@@ -1775,4 +1622,164 @@ DEF target Solid {
       }
     }
   ]
+}
+DEF target1 Solid {
+  translation -0.75 1.25 0.01
+  children [
+    DEF shape Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target2"
+}
+DEF target2 Solid {
+  translation 1.25 -0.75 0.01
+  children [
+    DEF shape Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target4"
+}
+DEF target3 Solid {
+  translation -0.75 -0.75 0.01
+  children [
+    DEF shape Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target1"
+}
+DEF targetRed1 Solid {
+  translation 0.75 -0.25 0.01
+  children [
+    DEF shape1 Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target_red1"
+}
+DEF targetRed2 Solid {
+  translation -0.25 -0.25 0.01
+  children [
+    DEF shape1 Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target_red4"
+}
+DEF targetRed3 Solid {
+  translation -0.25 0.75 0.01
+  children [
+    DEF shape1 Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target_red2"
+}
+DEF targetRed4 Solid {
+  translation 0.75 0.75 0.01
+  children [
+    DEF shape1 Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target_red3"
+}
+DEF target4 Solid {
+  translation 1.25 1.25 0.01
+  children [
+    DEF shape Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.01
+        radius 0.05
+      }
+    }
+  ]
+  name "target3"
+}
+WoodenBox {
+  translation -0.75 0.25 0.15
+  size 0.3 0.3 0.3
+}
+WoodenBox {
+  translation 0.25 0.25 0.15
+  name "wooden box(4)"
+  size 0.3 0.3 0.3
+}
+WoodenBox {
+  translation 0.25 1.25 0.15
+  name "wooden box(1)"
+  size 0.3 0.3 0.3
+}
+WoodenBox {
+  translation 1.25 0.25 0.15
+  name "wooden box(2)"
+  size 0.3 0.3 0.3
+}
+WoodenBox {
+  translation 0.791042 -1.1885 0.15
+  name "wooden box(3)"
+  size 0.3 0.3 0.3
 }

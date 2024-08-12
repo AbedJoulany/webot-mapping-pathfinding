@@ -19,7 +19,7 @@ class EpuckController:
             wheel.setVelocity(0.0)
             self.wheels.append(wheel)
 
-        self.path = [(-0.25, -0.25), (-0.25, 0.75), (0.75, 0.75), (0.75, -0.25)]
+        self.path = [(-0.25, -0.25), (-0.25, 0.75), (0.9, 0.9), (0.75, -0.25)]
         self.current_target_index = 0
 
         self.Kp_distance = 1.0
@@ -90,13 +90,14 @@ class EpuckController:
             target = self.path[self.current_target_index]
             distance_error, heading_error = self.calculate_control_signal(target, current_position, current_orientation)
 
-            print(f"Target: {target}, Current Position: {current_position}, Distance Error: {distance_error}, Heading Error: {heading_error}")
+            #print(f"Target: {target}, Current Position: {current_position}, Distance Error: {distance_error}, Heading Error: {heading_error}")
 
             if distance_error < 0.01:
-                print("Reached target:", target)
+                #print("Reached target:", target)
                 self.current_target_index += 1
                 if self.current_target_index >= len(self.path):
                     print("Final target reached. Stopping.")
+                    target_reached = True
                     for wheel in self.wheels:
                         wheel.setVelocity(0)
                     return
@@ -119,12 +120,12 @@ class EpuckController:
                                 self.Ki_heading * self.heading_error_sum + 
                                 self.Kd_heading * heading_error_delta)
 
-            print(f"Linear Velocity: {linear_velocity}, Angular Velocity: {angular_velocity}")
+            #print(f"Linear Velocity: {linear_velocity}, Angular Velocity: {angular_velocity}")
             
             left_speed = self.limit_speed(linear_velocity - angular_velocity, -6.28, 6.28)
             right_speed = self.limit_speed(linear_velocity + angular_velocity, -6.28, 6.28)
 
-            print(f"Left Speed: {left_speed}, Right Speed: {right_speed}")
+            #print(f"Left Speed: {left_speed}, Right Speed: {right_speed}")
             
             self.wheels[0].setVelocity(left_speed)
             self.wheels[1].setVelocity(right_speed)
@@ -133,13 +134,14 @@ class EpuckController:
                 wheel.setVelocity(0)
                 
     def run(self):
-        while self.robot.step(self.time_step) != -1:
+        while self.robot.step(self.time_step) != -1 and not target_reached:
             self.step()
         # Save collected data to CSV
         with open('simulation_data.csv', 'a', newline='') as file:
             writer = csv.writer(file)
             writer.writerows(self.data)
 
+target_reached = False
 TIME_STEP = 64
 robot_controller = EpuckController(TIME_STEP)
 robot_controller.run()

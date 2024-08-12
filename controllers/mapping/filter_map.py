@@ -5,7 +5,7 @@ def load_map(file_path):
     """Load the map from a CSV file."""
     return pd.read_csv(file_path, header=None).values
 
-def filter_similar_points(points, distance_threshold=0.05):
+def filter_similar_points(points, distance_threshold=0.001):
     """
     Exclude points that are within a certain distance threshold of each other.
     
@@ -28,11 +28,11 @@ def save_filtered_map(filtered_points, output_file_path):
     pd.DataFrame(filtered_points).to_csv(output_file_path, header=None, index=False)
 
 def main():
-    input_file_path = 'map.csv'
+    input_file_path = 'C:/Users/abeda/webot-mapping-pathfinding/controllers/mapping/map.csv'
     output_file_path = 'filtered_map.csv'
-    
+
     points = load_map(input_file_path)
-    filtered_points = filter_similar_points(points, distance_threshold=0.05)
+    filtered_points = filter_similar_points(points, distance_threshold=0.001)
     save_filtered_map(filtered_points, output_file_path)
     print(f"Filtered map saved to {output_file_path}")
 

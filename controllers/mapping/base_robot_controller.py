@@ -2,7 +2,7 @@ import math
 import numpy as np
 from controller import Supervisor, Keyboard, Lidar, GPS
 from PID.pid_controller import PIDController
-from visualize_grid import create_occupancy_grid
+from visualize_grid import create_occupancy_grid,load_occupancy_grid
 from matplotlib import pyplot as plt
 
 class BaseRobotController:
@@ -42,8 +42,8 @@ class BaseRobotController:
         self._keyboard = self._robot.getKeyboard()
         self._keyboard.enable(self._timestep)
 
-        self.distance_pid = PIDController(1.0, 0.01, 0.1)
-        self.heading_pid = PIDController(0.1, 0.01, 0.05)
+        self.distance_pid = PIDController(2.0, 0.02, 0.2)
+        self.heading_pid = PIDController(0.05, 0.001, 0.005)
 
         self._init_constants()
         self._initialize_mapping()
@@ -63,14 +63,14 @@ class BaseRobotController:
         }
         self.manual_control = {"active": True, "count": 0}
         self.path = {"path": 0}
-        self.world_size = (2, 2)
-        self.map_size = (2, 2)
+        self.world_size = (3.5, 3.5)
+        self.map_size = (3.5, 3.5)
         self.h_true_pos = np.zeros((3, 0))
         self.h_enco_pos = np.zeros((3, 0))
-        self.map = np.zeros((0, 2))
+        self.map = np.zeros((0, 3))
         self.file_path = 'map.csv'
         #self.map_size = 2  # meters
-        self.resolution = 0.05  # meter per cell
+        self.resolution = 0.001  # meter per cell
     
     def _initialize_mapping(self):
         self.ps_values = [0, 0]
@@ -141,6 +141,8 @@ class BaseRobotController:
         for waypoint in waypoints:
             self._move_towards_waypoint(current_position, waypoint)
             current_position = self.get_robot_pose_from_webots()
+
+
         self.set_motor_speeds(0, 0)
         return True
 
@@ -291,8 +293,8 @@ class BaseRobotController:
         linear_velocity = self.distance_pid.update(distance_error, dt)
         angular_velocity = self.heading_pid.update(heading_error, dt)
         
-        left_speed = self.limit_speed(linear_velocity - angular_velocity, -20, 20)
-        right_speed = self.limit_speed(linear_velocity + angular_velocity, -20, 20)
+        left_speed = self.limit_speed(linear_velocity - angular_velocity, -6.28, 6.28)
+        right_speed = self.limit_speed(linear_velocity + angular_velocity, -6.28, 6.28)
         
         self.set_motor_speeds(left_speed, right_speed)
 

@@ -1,7 +1,6 @@
 import math
 import numpy as np
 from controller import Supervisor, Keyboard, Lidar, GPS
-from visualize_grid import create_occupancy_grid
 from matplotlib import pyplot as plt
 from a_star import AStarPathfinder
 from base_robot_controller import BaseRobotController

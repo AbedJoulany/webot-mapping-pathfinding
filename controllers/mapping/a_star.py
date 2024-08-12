@@ -70,8 +70,8 @@ class AStarPathfinder:
             if current_node == goal_node:
                 #print("Goal reached!")
                 #return
-                #return self.reconstruct_path(current_node)
-                return self.smooth_path(self.reconstruct_path(current_node))
+                return self.reconstruct_path(current_node)
+                #return self.smooth_path(self.reconstruct_path(current_node))
 
             for action in self.actions:
                 neighbor_pos = (current_node.position[0] + action[0], current_node.position[1] + action[1], 0)
@@ -100,10 +100,6 @@ class AStarPathfinder:
     def world_to_grid(self, point):
 
         x, y,z = point
-
-        #x_grid = -1*((x ) * self.resolution - self.map_size[0] / 2)
-        #y_grid = ((y ) * self.resolution - self.map_size[0] / 2)
-
         x_grid = int((x + self.map_size[0] / 2) / self.resolution)
         y_grid = int((y + self.map_size[0] / 2 ) / self.resolution)
 
@@ -116,8 +112,8 @@ class AStarPathfinder:
         return (x_world, y_world, z_world)
 
     def heuristic(self, a, b):
-        return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
-        #return abs(a[0] - b[0]) + abs(a[1] - b[1])
+        #return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
     def smooth_path(self, waypoints):
@@ -132,6 +128,7 @@ class AStarPathfinder:
                     break
                 j -= 1
         return smoothed_path
+
 
     def is_line_of_sight(self, point1, point2):
         # Implement a line-of-sight algorithm (e.g., Bresenham's line algorithm)
@@ -156,5 +153,8 @@ class AStarPathfinder:
                 err += dx
                 y0 += sy
         return True
+    
+
+    
 
 

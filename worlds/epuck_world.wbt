@@ -9,7 +9,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.5771071026815523 0.5778286283448645 0.5771147791380814 2.0935988619108334
-  position 0.00026636108862200617 0.0003097298417192483 3.145760049836896
+  position 0.0001197124105869491 0.00011321607939756501 6.913629814787806
 }
 TexturedBackground {
 }
@@ -1571,7 +1571,7 @@ DEF E-PUCK-OBS Robot {
   remoteControl "e-puck_wifi"
 }
 DEF e-puck Robot {
-  translation 0.75 -0.75 -0.000133254
+  translation 1.25 1.25 -0.000133254
   rotation 0 0 1 3.14159
   children [
     Compass {
@@ -1603,7 +1603,7 @@ DEF e-puck Robot {
         }
       ]
       endPoint DEF EPUCK_LEFT_WHEEL Solid {
-        translation 0 0.026000000000000006 0.02
+        translation 0 0.025999999999999943 0.02
         rotation 0 1 0 0
         children [
           DEF EPUCK_WHEEL Pose {
@@ -1757,7 +1757,7 @@ DEF e-puck Robot {
         }
       ]
       endPoint DEF EPUCK_RIGHT_WHEEL Solid {
-        translation 0 -0.02599999999999997 0.02
+        translation 0 -0.025999999999999916 0.02
         rotation 0 1 0 0
         children [
           Pose {
@@ -3190,7 +3190,7 @@ DEF target2 Solid {
       }
     }
   ]
-  name "targer4"
+  name "target4"
 }
 DEF target3 Solid {
   translation -0.75 -0.75 0.01
@@ -3261,7 +3261,7 @@ DEF targetRed3 Solid {
   name "target_red2"
 }
 DEF targetRed4 Solid {
-  translation 0.75 0.75 0.01
+  translation 0.9 0.9 0.01
   children [
     DEF shape1 Shape {
       appearance PBRAppearance {

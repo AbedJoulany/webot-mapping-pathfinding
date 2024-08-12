@@ -11,7 +11,7 @@ from manual_mapping_robot import ManualMappingController
 
 if __name__ == "__main__":
 
-    mode = 0
+    mode = 1
 
     if mode == 0:
         manual_mapping_controller = ManualMappingController()
