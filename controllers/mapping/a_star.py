@@ -1,13 +1,17 @@
 import numpy as np
 import heapq
 import math
+import matplotlib.pyplot as plt
+from safe_interval_manager import SafeIntervalManager
 
 class Node():
     """A node class for A* Pathfinding"""
 
-    def __init__(self, parent=None, position=None):
+    def __init__(self, parent=None, position=None,time =0):
         self.parent = parent
         self.position = position
+        self.time = time  # Time of arrival at this node
+
 
         self.g = 0
         self.h = 0
@@ -16,27 +20,51 @@ class Node():
     def __eq__(self, other):
         return self.position[0] == other.position[0] and self.position[1] == other.position[1]
 
-
     def __lt__(self, other):
         return self.f < other.f
 
+    def __hash__(self):
+        return hash((self.position[0], self.position[1]))
+
 # Define A* Pathfinding class
 class AStarPathfinder:
-    def __init__(self, occupancy_grid, resolution, map_size):
-        self.occupancy_grid = occupancy_grid
+    def __init__(self, occupancy_grid, resolution, map_size, robot_radius):
+        self.occupancy_grid = np.copy(occupancy_grid)
         self.resolution = resolution
         self.map_size = map_size
         self.grid_size = map_size[0] / resolution
+        self.robot_radius = 0.025 / resolution  # Convert robot radius to grid units
+
+
         #print(f"len(self.grid_size) {self.grid_size}")
-        self.actions = [(-1, 0), (1, 0), (0, -1), (0, 1),
-                        (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        self.actions = [(-1, 0), (1, 0), (0, -1), (0, 1)
+                        ,(-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+
+    def set_occupancy_grid(self, occupancy_grid):
+        self.occupancy_grid = np.copy(occupancy_grid)
+
     def is_within_bounds(self, position):
         x, y,z = position
         return 0 <= x < self.grid_size and 0 <= y < self.grid_size
-
     def is_traversable(self, position):
-        x, y,z = position
-        return self.occupancy_grid[y][x] == 0
+        x, y, z = position
+        radius = int(self.robot_radius)
+
+        # Calculate the corner positions
+        corners = [
+            (x - radius, y - radius),
+            (x - radius, y + radius),
+            (x + radius, y - radius),
+            (x + radius, y + radius)
+        ]
+
+        # Check each corner
+        for corner_x, corner_y in corners:
+            if not self.is_within_bounds((corner_x, corner_y, z)) or self.occupancy_grid[corner_y][corner_x] != 0:
+                return False
+        return True
+
 
     def reconstruct_path(self, current_node):
         #print("at reconstruct_path")
@@ -45,6 +73,7 @@ class AStarPathfinder:
             path.append(current_node.position)
             current_node = current_node.parent
         return path[::-1]  # Return reversed path
+    
 
     def find_path(self, start, goal):
         start_grid = self.world_to_grid(start)
@@ -53,25 +82,21 @@ class AStarPathfinder:
         start_node = Node(None, start_grid)
         goal_node = Node(None, goal_grid)
 
-        #print(f"start_node {start_node.position}")
-        #print(f"goal_node {goal_node.position}")
-
-
         open_list = []
-        closed_list = set()
+        closed_list = {}
 
         heapq.heappush(open_list, start_node)
-
+        #plt.ion()
         while open_list:
             current_node = heapq.heappop(open_list)
             #print(f"Current node: {current_node.position}")
-            closed_list.add(current_node.position)
-
+            #closed_list.add(current_node.position)
+            closed_list[current_node.position] = current_node
+            #self.visualize_pathfinding(open_list, closed_list, current_node, start, goal)
             if current_node == goal_node:
                 #print("Goal reached!")
-                #return
+                #plt.ioff()
                 return self.reconstruct_path(current_node)
-                #return self.smooth_path(self.reconstruct_path(current_node))
 
             for action in self.actions:
                 neighbor_pos = (current_node.position[0] + action[0], current_node.position[1] + action[1], 0)
@@ -116,45 +141,72 @@ class AStarPathfinder:
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-    def smooth_path(self, waypoints):
-        smoothed_path = [waypoints[0]]
-        i = 0
-        while i < len(waypoints) - 1:
-            j = len(waypoints) - 1
-            while j > i:
-                if self.is_line_of_sight(waypoints[i], waypoints[j]):
-                    smoothed_path.append(waypoints[j])
-                    i = j
-                    break
-                j -= 1
-        return smoothed_path
+    def update_occupancy_grid_with_obstacles(self, obstacle_positions, obstacle_radius):
+        """
+        Updates the occupancy grid by clearing previous obstacle positions and marking new obstacle positions.
+
+        :param obstacle_positions: List of tuples containing obstacle positions [(x1, y1), (x2, y2), ...]
+        :param obstacle_radius: Radius of the obstacles to consider when marking the grid.
+        """
+
+        # Convert obstacle radius to grid cells
+        grid_radius = int(obstacle_radius / self.resolution)
+
+        # Mark the new obstacle positions
+        for obs_pos in obstacle_positions:
+            grid_x, grid_y,z = self.world_to_grid(obs_pos)
+
+            # Mark all cells within the obstacle's radius as occupied
+            for dx in range(-grid_radius, grid_radius + 1):
+                for dy in range(-grid_radius, grid_radius + 1):
+                    # Calculate the distance from the obstacle center
+                    distance = (dx ** 2 + dy ** 2) ** 0.5
+                    if distance <= grid_radius:
+                        # Mark the cell as occupied if within radius
+                        if 0 <= grid_x + dx < len(self.occupancy_grid[0]) and 0 <= grid_y + dy < len(self.occupancy_grid):
+                            self.occupancy_grid[grid_y + dy][grid_x + dx] = 1  # Mark as occupied (1 for obstacle)
 
 
-    def is_line_of_sight(self, point1, point2):
-        # Implement a line-of-sight algorithm (e.g., Bresenham's line algorithm)
-        x0, y0,z0 = point1[0], point1[1], point1[2]
-        x1, y1,z1 = point2[0], point2[1], point2[2]
-        dx = abs(x1 - x0)
-        dy = abs(y1 - y0)
-        sx = 1 if x0 < x1 else -1
-        sy = 1 if y0 < y1 else -1
-        err = dx - dy
+    def plot_occupancy_grid(self):
+        """Plots the current state of the occupancy grid."""
+        plt.figure(figsize=(8, 8))
+        plt.imshow(self.occupancy_grid, cmap='Greys', origin='lower')
+        plt.title("Occupancy Grid with Obstacles")
+        plt.xlabel("X grid cells")
+        plt.ylabel("Y grid cells")
+        plt.colorbar(label='Occupancy')
+        plt.show()
 
-        while True:
-            if not self.is_traversable(point1):
-                return False
-            if x0 == x1 and y0 == y1:
-                break
-            e2 = err * 2
-            if e2 > -dy:
-                err -= dy
-                x0 += sx
-            if e2 < dx:
-                err += dx
-                y0 += sy
-        return True
-    
 
-    
+    def visualize_pathfinding(self, open_list, closed_list, current_node, start, goal):
+            # Clear the current plot
+            # Clear the current plot only if necessary
+            if not hasattr(self, '_ax') or self._ax is None:
+                self._fig, self._ax = plt.subplots()
 
+            self._ax.clear()
+
+            # Plot the occupancy grid
+            self._ax.imshow(self.occupancy_grid, cmap='gray', origin='lower')
+
+            # Plot the start and goal positions
+            start_grid = self.world_to_grid(start)
+            goal_grid = self.world_to_grid(goal)
+            self._ax.plot(start_grid[0], start_grid[1], "go")  # Start is green
+            self._ax.plot(goal_grid[0], goal_grid[1], "ro")    # Goal is red
+
+            closed_positions = np.array([pos for pos, _ in closed_list.items()])
+            open_positions = np.array([node.position for node in open_list])
+            if len(closed_positions) > 0:
+                self._ax.plot(closed_positions[:, 0], closed_positions[:, 1], "bx")  # Closed nodes are blue
+
+            if len(open_positions) > 0:
+                self._ax.plot(open_positions[:, 0], open_positions[:, 1], "yo")  # Open nodes are yellow
+
+            # Highlight the current node
+            self._ax.plot(current_node.position[0], current_node.position[1], "co")  # Current node is cyan
+
+            # Draw the plot
+            plt.draw()
+            plt.pause(0.00001)  # Pause to allow the plot to update
 
