@@ -93,9 +93,7 @@ class ManualMappingController(BaseRobotController):
 
         self.w = w
         self.v = v
-        #self.robot_pose_encoder[2] = (
-        #    (self.robot_pose_encoder[2] + w) % (2 * math.pi) - math.pi
-        #)
+
         self.robot_pose_encoder[2] = self.robot_pose_encoder[2] + (w * 1)
         self.robot_pose_encoder[2] = ((self.robot_pose_encoder[2] + math.pi) % (2 * math.pi) - math.pi)
         vx = v * math.cos(self.robot_pose_encoder[2])
