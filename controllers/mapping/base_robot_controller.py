@@ -1,20 +1,20 @@
 import math
 import numpy as np
 from controller import Supervisor, Keyboard, Lidar, GPS
-from visualize_grid import create_occupancy_grid
+from PID.pid_controller import PIDController
+from visualize_grid import create_occupancy_grid,load_occupancy_grid
 from matplotlib import pyplot as plt
 
 class BaseRobotController:
-    def __init__(self):
+    def __init__(self, robot_name= "e-puck"):
         self._robot = Supervisor()
         self._timestep = int(self._robot.getBasicTimeStep())
-        self._initialize_devices()
+        self._initialize_devices(robot_name)
 
-    def _initialize_devices(self):
+    def _initialize_devices(self, robot_name:str):
         self._timestep = 64
-        self._epuck_robot = self._robot.getFromDef("e-puck")
+        self._epuck_robot = self._robot.getFromDef(robot_name)
         self._rotation_field = self._epuck_robot.getField("rotation")
-
         self._lidar = self._robot.getDevice("lidar")
         self._lidar.enable(self._timestep)
         self._lidar.enablePointCloud()
@@ -24,6 +24,9 @@ class BaseRobotController:
 
         self._compass = self._robot.getDevice("compass")
         self._compass.enable(self._timestep)
+
+        self._camera = self._robot.getDevice('camera')
+        #self._camera.enable(self._timestep)
 
         self._left_motor = self._robot.getDevice("left wheel motor")
         self._right_motor = self._robot.getDevice("right wheel motor")
@@ -38,6 +41,9 @@ class BaseRobotController:
 
         self._keyboard = self._robot.getKeyboard()
         self._keyboard.enable(self._timestep)
+
+        self.distance_pid = PIDController(2.0, 0.02, 0.2)
+        self.heading_pid = PIDController(0.05, 0.001, 0.005)
 
         self._init_constants()
         self._initialize_mapping()
@@ -57,20 +63,20 @@ class BaseRobotController:
         }
         self.manual_control = {"active": True, "count": 0}
         self.path = {"path": 0}
-        self.world_size = (2, 2)
-        self.map_size = (2, 2)
+        self.world_size = (3.5, 3.5)
+        self.map_size = (3.5, 3.5)
         self.h_true_pos = np.zeros((3, 0))
         self.h_enco_pos = np.zeros((3, 0))
-        self.map = np.zeros((0, 2))
+        self.map = np.zeros((0, 3))
         self.file_path = 'map.csv'
         #self.map_size = 2  # meters
-        self.resolution = 0.05  # meter per cell
+        self.resolution = 0.001  # meter per cell
     
     def _initialize_mapping(self):
         self.ps_values = [0, 0]
         self.dist_values = [0, 0]
         self.last_ps_values = [0, 0]
-        self.target = self._robot.getFromDef("target")
+        self.target = self._robot.getFromDef("target3")
 
     @property
     def robot(self):
@@ -104,6 +110,10 @@ class BaseRobotController:
     def compass(self):
         return self._compass
 
+    @property
+    def camera(self):
+        return self._camera
+
     def set_motor_speeds(self, left_speed, right_speed):
         self._left_motor.setVelocity(left_speed)
         self._right_motor.setVelocity(right_speed)
@@ -131,6 +141,8 @@ class BaseRobotController:
         for waypoint in waypoints:
             self._move_towards_waypoint(current_position, waypoint)
             current_position = self.get_robot_pose_from_webots()
+
+
         self.set_motor_speeds(0, 0)
         return True
 
@@ -212,9 +224,6 @@ class BaseRobotController:
 
         self.w = w
         self.v = v
-        #self.robot_pose_encoder[2] = (
-        #    (self.robot_pose_encoder[2] + w) % (2 * math.pi) - math.pi
-        #)
         self.robot_pose_encoder[2] = self.robot_pose_encoder[2] + (w * 1)
         self.robot_pose_encoder[2] = ((self.robot_pose_encoder[2] + math.pi) % (2 * math.pi) - math.pi)
         vx = v * math.cos(self.robot_pose_encoder[2])
@@ -256,12 +265,54 @@ class BaseRobotController:
         return current_time < previous_time or len(z_points) == 0
 
     def update_map(self, z_points, current_time, previous_time):
-        self.map = np.vstack((self.map, z_points))
-        return 0
+
+        # Convert current map and z_points to sets of tuples to check for existing points
+        existing_points = set(map(tuple, self.map))
+        new_points = [point for point in z_points if tuple(point) not in existing_points]
+
+        # Update the map only with new points
+        if new_points:
+            self.map = np.vstack((self.map, new_points))
+        #self.map = np.vstack((self.map, z_points))
 
     def save_map(self):
         np.savetxt("map.csv", self.map, delimiter=",")
         print("Map saved to map.csv")
+
+
+
+    def update_pid(self, current_position, target_position):
+        current_orientation = current_position[2]
+
+        distance_error, heading_error = self.calculate_control_signal(target_position, current_position, current_orientation)
+
+        dt = self.timestep / 64
+        linear_velocity = self.distance_pid.update(distance_error, dt)
+        angular_velocity = self.heading_pid.update(heading_error, dt)
+        
+        left_speed = self.limit_speed(linear_velocity - angular_velocity, -6.28, 6.28)
+        right_speed = self.limit_speed(linear_velocity + angular_velocity, -6.28, 6.28)
+        
+        self.set_motor_speeds(left_speed, right_speed)
+
+    def calculate_error(self, target, current):
+        return math.sqrt((target[0] - current[0]) ** 2 + (target[1] - current[1]) ** 2)
+
+    def calculate_control_signal(self, target, current_position, current_orientation):
+        angle_to_target = math.degrees(math.atan2(target[1] - current_position[1], target[0] - current_position[0]))
+        heading_error = angle_to_target - math.degrees(current_orientation)
+
+        if heading_error > 180:
+            heading_error -= 360
+        elif heading_error < -180:
+            heading_error += 360
+
+        distance_error = self.calculate_error(target, current_position)
+
+        return distance_error, heading_error
+
+    def limit_speed(self, speed, min_speed, max_speed):
+        return max(min_speed, min(speed, max_speed))
 
 
 
