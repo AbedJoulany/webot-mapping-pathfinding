@@ -48,7 +48,7 @@ import torch
 import numpy as np
 
 def estimate_measurement_noise_covariance(sdae_model, sensor_data):
-    """
+    """"""""
     Estimate the measurement noise covariance matrix R using a trained SDAE model.
     
     Parameters:
@@ -57,7 +57,7 @@ def estimate_measurement_noise_covariance(sdae_model, sensor_data):
     
     Returns:
     np.ndarray: Measurement noise covariance matrix R.
-    """
+    """"""
     # Step 2: Give the input to the trained SDAE "net_theta"
     denoised_data = sdae_model(sensor_data).detach().numpy()
     
