@@ -5,6 +5,7 @@ from path_finding_robot_mpc import PathFindingRobotMPCController
 from path_finding_robot_ekf import PathFindingRobotEKFController
 from data_collect import DataCollectorRobotController
 from path_finding_robot import PathFindingRobotController
+from path_finding_robot_rrt import PathFindingRobotControllerRRT
 
 from manual import manual_navigation
 from manual_mapping_robot import ManualMappingController
